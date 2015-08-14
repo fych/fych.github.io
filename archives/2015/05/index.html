@@ -1,10 +1,10 @@
 
- <!DOCTYPE HTML>
+  <!DOCTYPE HTML>
 <html lang="English">
 <head>
   <meta charset="UTF-8">
   
-    <title>tags | Lucas</title>
+    <title>歸檔: 2015/5 | Lucas</title>
     <meta name="viewport" content="width=device-width, initial-scale=1,user-scalable=no">
     
     <meta name="author" content="方毓臣">
@@ -13,13 +13,12 @@
     
     <meta name="description" content="It works on my machine!">
 <meta property="og:type" content="website">
-<meta property="og:title" content="tags">
-<meta property="og:url" content="http://fangyuchen.com/tags/index.html">
+<meta property="og:title" content="Lucas">
+<meta property="og:url" content="http://fangyuchen.com/archives/2015/05/index.html">
 <meta property="og:site_name" content="Lucas">
 <meta property="og:description" content="It works on my machine!">
-<meta property="og:updated_time" content="2015-08-13T11:20:28.602Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="tags">
+<meta name="twitter:title" content="Lucas">
 <meta name="twitter:description" content="It works on my machine!">
 <meta name="twitter:creator" content="@Sysulucas## e.g. jarkwu for https://twitter.com/jarkwu">
 
@@ -79,21 +78,35 @@
 </div>
       </header>
       <div id="container">
-          
+        
+
 <div class="archive-title" >
-<h2 class="tag-icon">標簽</h2>
-
-<a data-src="/tags/try/" href="#try" title="try">try<sup>2</sup></a>
-
-<a data-src="/tags/who/" href="#who" title="who">who<sup>1</sup></a>
-
+  <h2 class="archive-icon">2015/5</h2>
+  
+  <div class="archiveslist archive-float clearfix">
+   <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/08/">2015 年 08 月</a><span class="archive-list-count">1</span></li><li class="archive-list-item"><a class="archive-list-link" href="/archives/2015/05/">2015 年 05 月</a><span class="archive-list-count">1</span></li></ul>
+ </div>
+  
 </div>
-<div id="main" class="archive-part">
-<div class="all-list-box"></div>
+<div id="main" class="archive-part clearfix">
+  <div id="archive-page">
+
+  <section class="post" itemscope itemprop="blogPost">
+  
+    <a href="/2015/05/12/hello-world/" title="Hello World" itemprop="url">
+  
+
+    <time datetime="2015-05-12T09:12:57.000Z" itemprop="datePublished">2015-05-12</time>
+
+
+    <h1 itemprop="name">Hello World</h1>
+
+  </a>
+</section>
+
+
+  </div>
 </div>
-
-
-
 
       </div>
       <footer><div id="footer" >
@@ -224,24 +237,6 @@ $(document).ready(function(){
 
 
 
-
-<script type="text/javascript">
-$(document).ready(function(){ 
-  var list    = $('.archive-title a'),
-      box     = $('.all-list-box'),
-      first   = $('.archive-title a:first-of-type');
-      box.load(first.attr('data-src').toString()+' #archive-page');
-      first.addClass('current');
-  list.each(function(){
-    $(this).click(function(){
-      var listSrc=$(this).attr('data-src').toString()+' #archive-page';
-      box.load(listSrc);
-      list.removeClass('current');
-      $(this).addClass('current');
-     });  
-    });
-  }); 
-</script>
 
 
 <link rel="stylesheet" href="/fancybox/jquery.fancybox.css" media="screen" type="text/css">
