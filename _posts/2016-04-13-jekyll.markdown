@@ -1,8 +1,8 @@
 ---
 layout:     post
 title:      "My first blog"
-subtitle:   "Hello world"
-date:       2016-04-13 12:00:00
+subtitle:   "Jekyll with duoshuo"
+date:       2016-04-13
 author:     "Lucas"
 header-img: "img/post-bg-2015.jpg"
 catalog: true
