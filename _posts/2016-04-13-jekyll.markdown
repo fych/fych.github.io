@@ -1,0 +1,16 @@
+---
+layout:     post
+title:      "Jekyll bug with duoshuo"
+subtitle:   "Jekyll with duoshuo"
+date:       2016-04-13
+author:     "Lucas"
+header-img: "img/post-bg-re-vs-ng2.jpg"
+header-mask: 0.3
+catalog:    true
+tags:
+    - jekyll
+---
+这是今天遇到的一个最大的bug，把duoshuo_username:_your_duoshuo_short_name_中的duoshuo二级域名填成名称了。
+windows版本的jekyll环境搭建主要参考了http://jekyll-windows.juthilo.com/1-ruby-and-devkit/
+博客模板主要来自于黄玄同学，https://github.com/Huxpro/huxpro.github.io#comment
+多说显示问题解决主要参考了http://www.ituring.com.cn/article/114888
