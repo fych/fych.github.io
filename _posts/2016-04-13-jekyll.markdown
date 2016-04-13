@@ -15,6 +15,21 @@ windows版本的jekyll环境搭建主要参考了[Jekyll-windows](http://jekyll-
 博客模板主要来自于黄玄同学[hux](https://github.com/Huxpro/huxpro.github.io#comment),
 多说显示问题解决主要参考了[ituring](http://www.ituring.com.cn/article/114888)
 
+另外一个问题是对于data-thread-key不是很清楚,需要进一步学习多说的评论使用
+比如about.html里面118行
+{if site.duoshuo_username == "huxblog" %}
+    data-thread-id="1187623191091085319"
+这里的id是怎么自动生成的吗，全世界唯一？
+为什么我改成
+{if site.duoshuo_username == "fangyuchen" %}
+    data-thread-id="1187623191091085319"就不能评论
+但是改成
+{if site.duoshuo_username == "fangyuchen" %}
+    data-thread-id="1187623191091085310"或者
+{if site.duoshuo_username == "fangyuchen" %}
+    data-thread-key="{{site.duoshuo_username}}/about"就可以评论
+
+
 # post
 ## date参数
 _posts文件夹里面存放着md格式的原文档，文档的名称之前必须为日期，应该注意到文档的内容中的文首如果不写date参数，

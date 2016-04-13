@@ -2,6 +2,7 @@
 layout: post
 title: "markdown基础"
 subtitle: "markdown is a new sexy"
+author: "Lucas"
 date: 2016-04-13
 tags: Markdown
 ---
