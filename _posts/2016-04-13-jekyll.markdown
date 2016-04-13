@@ -1,17 +1,26 @@
 ---
 layout:     post
 title:      "My first blog"
-subtitle:   "Jekyll with duoshuo"
+subtitle:   "Jekyll with many puzzle"
 date:       2016-04-13
 author:     "Lucas"
-header-img: "img/post-bg-2015.jpg"
 catalog: true
 tags:
     - makejekyll
 ---
 
-### 无奈
+# duoshuo
 这是今天遇到的一个最大的bug，把duoshuo_username:_your_duoshuo_short_name_中的duoshuo二级域名填成名称了。
-windows版本的jekyll环境搭建主要参考了http://jekyll-windows.juthilo.com/1-ruby-and-devkit/
-博客模板主要来自于黄玄同学，https://github.com/Huxpro/huxpro.github.io#comment
-多说显示问题解决主要参考了http://www.ituring.com.cn/article/114888
+windows版本的jekyll环境搭建主要参考了[Jekyll-windows](http://jekyll-windows.juthilo.com/1-ruby-and-devkit/),
+博客模板主要来自于黄玄同学[hux](https://github.com/Huxpro/huxpro.github.io#comment),
+多说显示问题解决主要参考了[ituring](http://www.ituring.com.cn/article/114888)
+
+# post
+## date参数
+_posts文件夹里面存放着md格式的原文档，文档的名称之前必须为日期，应该注意到文档的内容中的文首如果不写date参数，
+那么date将会和文档名称之前的日期一致。如果写date参数，那么参数必须与文档名称之前的日期一致，否则文档页面不会被渲染出来
+
+另外date参数中不能够补充上具体时刻，这个我至今不知道为什么。原博主的很多文档中都是有具体时刻的。
+
+## author参数
+如果mdw文档内容的文首不注明author,那么author的参数值将默认为_config.yml配置文件中的title参数值
