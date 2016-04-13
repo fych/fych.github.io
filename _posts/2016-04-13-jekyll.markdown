@@ -9,7 +9,8 @@ catalog: true
 tags:
     - makejekyll
 ---
-###无奈
+
+### 无奈
 这是今天遇到的一个最大的bug，把duoshuo_username:_your_duoshuo_short_name_中的duoshuo二级域名填成名称了。
 windows版本的jekyll环境搭建主要参考了http://jekyll-windows.juthilo.com/1-ruby-and-devkit/
 博客模板主要来自于黄玄同学，https://github.com/Huxpro/huxpro.github.io#comment
