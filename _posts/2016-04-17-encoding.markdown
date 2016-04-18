@@ -1,0 +1,87 @@
+---
+layout:     post
+title:      "encoding"
+subtitle:   "encoding in windows,netbeans,txt and command console"
+date:       2016-04-17
+author:     "Lucas"
+catalog: true
+tags:
+    - encoding
+---
+
+
+
+##  讓 Netbean 預設使用 UTF-8 編碼
+
+Netbean 在 7.4 後，可以直接拖拉方式來開啟單一檔案了，以前都必需要先建一個空白專案，但是由於沒有建立專案，所以 Netbean 不知道你的編碼規則，預設是 x-windows-950，所以必需修改設定檔 netbeans.conf（在软件安装目录下的etc文件夹中），找尋 netbeans_default_options 屬性，在最尾處加上 -J-Dfile.encoding=UTF-8。
+
+netbeans_default_options="...(前面省略) -J-Dfile.encoding=UTF-8"
+
+
+## 改变txt的编码
+windows会自动给txt文本添加bom，这是不可见的符号，会造成各种影响。所以应该使用notpad++修改txt文本为txt无bom编码。
+
+
+
+## 首先了解什么是BOM？
+BOM是BYTE ORDER MARK，也就是字节序标记,它是Unicode标准的一部分。详情见维基百科[Byte order mark.](https://en.wikipedia.org/wiki/Byte_order_mark)
+
+微软操作系统在创建Unicode编码的文本文件时，会在文件中放置BOM。通常BOM是用来标示Unicode纯文本字节流的，用来提供一种方便的方法让文本处理程序识别读入的.txt文件是哪个Unicode编码（UTF-8，UTF-16BE，UTF-16LE）。Windows相对对BOM处理比较好，是因为Windows把Unicode识别代码集成进了API里，主要是CreateFile()。打开文本文件时它会自动识别并剔除BOM。Windows用BOM是有历史原因的，因为它最初脱胎于多代码页的环境，而引入Unicode时Windows的设计者又希望能在用户不注意的情况下同时兼容Unicode和非Unicode（Multiple byte）文本文件，就只能借助这种小trick了。（吐槽：微软对兼容性的要求确实是到了非常偏执的地步，任何一点破坏兼容性的做法都不允许，以至于很多时候是自己绑住自己的双手）相比之下，Linux这样的系统在多locale的环境中浸染的时间比较短，再加上社区本身也有足够的动力轻装前进，所以干脆一步到位进入UTF-8。
+
+
+参考：[知乎陈甫鸼](https://www.zhihu.com/question/20167122/answer/14199022)
+
+#### 问题一、UTF-8也是多字节编码，为什么可以不需要BOM来标明字节序？
+UTF-8、UTF-16、UTF-32 这些是用于把抽象的编号（code point）编码为二进制数据流的方案。
+UTF-8 的编码单位是 byte，它用一个接一个的1至4个 byte 来编码一个字符，不存在字节序问题。
+UTF-16/32 的编码单位是16或32个 bit，将16或32个 bit 存储为2或4个字节时就有字节序问题了。
+
+
+## 阮一峰谈Ascii、Unicode和UTF-8
+[阮一峰谈Ascii、Unicode和UTF-8](http://www.ruanyifeng.com/blog/2007/10/ascii_unicode_and_utf-8.html)
+
+注：这篇文章需要翻墙。
+
+
+## 谈谈Unicode编码
+参考文章 [程序员趣味读物：谈谈Unicode编码](http://pcedu.pconline.com.cn/empolder/gj/other/0505/616631_all.html#content_page_1)
+
+#### 摘记1
+Unicode、Unicode big endian和UTF-8编码的txt文件的开头会多出几个字节，分别是FF、FE（Unicode）,FE、FF（Unicode big endian）,EF、BB、BF（UTF-8）。这是因为在windows操作系统下，
+
+#### 大端还是小端
+大端存储（big endian）和小端存储(little endian)是cpu处理多字节数的不同方式。例如“汉”字的Unicode编码是6C49，写到文件里时，如果将6C写在前面，就是big endian,将49写在前面，就是little endian。
+
+#### 字符编码、内码和汉字内码
+字符必须编码后才能被计算机处理。计算机使用的缺省编码方式就是计算机的内码。早期计算机的内码只是ASCII编码；现在的计算机为了支持简体中文，使用了GB2312、GBK或GB18030。关于中文编码，详细见 [中文编码](http://www.fangyuchen.com/2016/04/14/chinese-encoding)
+
+#### cmd打开UTF-8编码的文本显示乱码的原因：
+应该注意到，现在的许多中文windows的缺省内码还是GBK。比如我的windows10系统上面的cmd默认代码页是936（ANSI/OEM-简体中文GBK），并且只有另外一个可选项是437（OEM-美国）。因为GBK对于与Unicode是不兼容的，Unicode只与ASCII兼容（更准确说，是与ISO-8859-1兼容），而uft-8是Unicode的一种实现方法，所以cmd打开UTF-8编码的txt文件会出现乱码。这时应该将txt文件的编码方法改为GBK，或者将cmd使用的系统字符集暂时改为UTF-8。我们这里采用第二种方式解决命令行的乱码以及编码的问题：
+
+命令 CHCP nnn，其中nnn 指定代码页编号。不加参数键入 CHCP 显示活动代码页编号。nnn指定一已有的系统字符集，该字符集在CONFIG.SYS文件中由COUNTRY命令定义。
+
+chcp 65001 就是换成UTF-8代码页 
+
+chcp 936 可以换回默认的GBK
+
+
+如果想正确显示UTF-8字符，可以按照以下步骤操作： 
+
+1、打开CMD.exe命令行窗口 
+
+2、通过 chcp命令改变代码页，UTF-8的代码页为65001 
+chcp 65001 
+执行该操作后，代码页就被变成UTF-8了。但是，在窗口中仍旧不能正确显示UTF-8字符。 
+
+3、修改窗口属性，改变字体 
+在命令行标题栏上点击右键，选择"属性"->"字体"，将字体修改为True Type字体"Lucida Console"，（经过尝试，发现Consolas也可以）然后点击确定将属性应用到当前窗口。 
+这时使用type命令就可以显示UTF-8文本文件的内容了： 
+type filename.txt 
+
+4、通过以上操作并不能完全解决问题，因为显示出来的内容有可能不完全。可以先最小化，然后最大化命令行窗口，文件的内容就完整的显示出来了。 
+
+补充：MS-DOS为以下国家和语言提供字符集（代码页描述）
+
+1258 越南语 　　1257 波罗的语 　　1256 阿拉伯语 　　1255 希伯来语 　　1254 土耳其语 　　1253 希腊语 　　1252 拉丁 1 字符 (ANSI) 　　1251 西里尔语 　　1250 中欧语言 　　950 繁体中文 　　949 朝鲜语 　　936 简体中文（默认） 　　932 日语 　　874 泰国语 　　850 多语种 (MS-DOS Latin1) 　　437 MS-DOS 美国英语 
+
+
