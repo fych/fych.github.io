@@ -39,20 +39,20 @@ solution:
 
 一开始的状态是软件的各种无法启动。
 
-![cmd启动失败](http://7xt54p.com2.z0.glb.clouddn.com/cmdfailed.png)
+![cmd启动失败](http://7xt54p.com2.z0.glb.clouddn.com/image/windows10/cmdfailed.png)
 
-![powershell启动失败](http://7xt54p.com2.z0.glb.clouddn.com/powershellfailed.png)
+![powershell启动失败](http://7xt54p.com2.z0.glb.clouddn.com/image/windows10/powershellfailed.png)
 
-![schtask启动失败](http://7xt54p.com2.z0.glb.clouddn.com/schtasksfailed.png)
+![schtask启动失败](http://7xt54p.com2.z0.glb.clouddn.com/image/windows10/schtasksfailed.png)
 
 之后下载安装Advanced Systemcare,需注意到官网上去下载，避免携带病毒，另外应该注意到中文版本会携带很多的软件包或主页设置，应该在安装的时候勾选掉。
 
 然后使用ASC对注册表进行修复
-![](http://7xt54p.com2.z0.glb.clouddn.com/ASC.jpg)
+![ASC对注册表进行修复](http://7xt54p.com2.z0.glb.clouddn.com/image/windows10/ASC.jpg)
 
 
 完成之后重启电脑，发现大功告成了。
-![](http://7xt54p.com2.z0.glb.clouddn.com/cmd-success.PNG)
+![大功告成](http://7xt54p.com2.z0.glb.clouddn.com/image/windows10/cmd-success.PNG)
 
 ## 但是从此windows操作系统在我心里更加不好了。
 

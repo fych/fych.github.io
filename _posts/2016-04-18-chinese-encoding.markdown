@@ -9,6 +9,8 @@ tags:
     - encoding
 ---
 
+# 尚待修改
+
 摘选自[程序员趣味读物:谈谈Unicode编码](http://pcedu.pconline.com.cn/empolder/gj/other/0505/616631_all.html#content_page_1)
 
 字符必须编码后才能被计算机处理。计算机使用的缺省编码方式就是计算机的内码。早期的计算机使用7位的ASCII编码，为了处理汉字，程序员设计了用于简体中文的GB2312和用于繁体中文的big5。
