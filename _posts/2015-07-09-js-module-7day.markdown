@@ -3,7 +3,7 @@ layout:     keynote
 title:      "JavaScript 模块化七日谈"
 subtitle:   "Keynote: JavaScript Modularization Journey"
 iframe:     "http://huangxuan.me/js-module-7day/"
-date:       2015-07-09
+date:       12015-07-09
 author:     "Hux"
 header-img: "img/post-bg-js-version.jpg"
 tags:

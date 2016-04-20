@@ -2,7 +2,7 @@
 layout:     post
 title:      "Unix/Linux 扫盲笔记"
 subtitle:   "不适合人类阅读，非常水的自我笔记"
-date:       2015-04-14 
+date:       12015-04-14 
 author:     "Hux"
 header-img: "img/post-bg-unix-linux.jpg"
 catalog: true

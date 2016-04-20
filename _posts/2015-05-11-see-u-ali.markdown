@@ -2,7 +2,7 @@
 layout:     post
 title:      "See you, Alibaba "
 subtitle:   "再见，阿里。"
-date:       2015-05-11
+date:       12015-05-11
 author:     "Hux"
 header-img: "img/post-bg-see-u-ali.jpg"
 tags:
