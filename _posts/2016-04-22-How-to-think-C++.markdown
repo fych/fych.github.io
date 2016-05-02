@@ -6,7 +6,7 @@ date:       2016-04-22
 author:     "Lucas"
 catalog: true
 tags:
-    - reading
+    - 书籍读后感
 ---
 
 还差近1/4的内容，待续

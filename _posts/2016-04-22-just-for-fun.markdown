@@ -7,7 +7,7 @@ author:     "Lucas"
 header-img: "img/post-bg-Linus.jpg"
 catalog: true
 tags:
-    - reading
+    - 书籍读后感
 ---
 
 Linus,Linux的缔造者。除此之外，一直以来都对Linus一无所知。从图书馆借了这本书之后，一看到序言，就被这本书，就被Linus这个人迷住了。他不畏权贵，敢于直言，只做自己喜欢做的事。这么任性的一个人，我就是喜欢这么任性的一个人。Just For Fun.
