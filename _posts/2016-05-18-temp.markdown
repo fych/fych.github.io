@@ -1,0 +1,71 @@
+---
+layout:     post
+title:      "编译原理"
+subtitle:   "编译原理"
+date:       2016-05-18
+author:     "Lucas"
+catalog: true
+tags:
+    - 编译原理
+---
+
+王垠说：“编译型语言和解释型语言本质都是解释执行。”
+
+解释器和编译器功能上是一样的，但是结构上诸多相同，而且开发时本质差别不大。
+
+解释器：词法分析→语法分析→语义分析→执行（需要探究解释器的内部实现和具体功能）
+
+编译器：词法分析→语法分析→语义分析→中间代码生成→代码优化→（目标）代码生成→目标机器语言（汇编语言）
+
+现在关于解释和编译的界限也不是特别清晰了。（只有早期解释型语言如basic是直接解释执行，现在大多数解释型语言都采取将代码编译为某种特定的虚拟机代码或者机器码的形式，然后再执行那些编译好的代码）
+
+例：Java预先编译成虚拟机指令，再运行（称之为混合型或半编译型）
+
+    Python/lua可以直接解释源代码运行，也可以编译成虚拟机指令再运行
+
+    Php编译之后的结果可以被web server缓存起来，甚至还可以先被翻译成C++，然后再编译
+
+    NET的CLR运行时是windows的组成部分，编译好的NET系列语言的代码直接生成可运行文件，然后被“直接”执行，看起来和C没有什么太大的差别
+
+    JS可以被VS引擎编译为机器码然后执行，如果在nodejs下，这个编译结果被缓存起来了，你说这跟编译好再执行的C有什么区别
+
+一个语言处理系统（编译时到底发生了什么？代码演示/视频+黑板画图）
+
+源程序→预处理器→编译器→汇编器→链接器/加载器→目标机器代码
+
+一个编译器各个步骤 符号表→词法分法器→语法分析→中间代码生成器→机器无关代码优化器→代码生成器→机器相关代码优化器→目标机器结合
+
+注：编译器为每个作用域建立一个单独的符号表，符号中的每个条目包括变量以及各种属性：存储分配 类型 作用域 对于过程名字还有 参数数量和类型 参数传递方法 返回类型
+
+概述
+
+词法分析（理解单词）This is a sentence 
+                  
+                  if x==y then z=1;else z=2;
+
+语法分析（理解句子结构构建树）
+
+                          This line is a longer sentence
+                             |
+                          article  novn verb article adj novn
+
+                              subject              object
+
+                                        sentence
+
+                            If x==y then z=1；else z=2；
+
+     x==y  z  1  z  2
+
+   relation assign assign 
+
+  predicate  then-stmt else-stmt
+
+         if-then-else
+
+语义分析
+（理解句子含义） Jack said Jerry left his assignment at home-
+
+                Tack said Iack left his assignment at home？
+
+
