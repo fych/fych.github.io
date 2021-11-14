@@ -95,13 +95,13 @@ CommandLine flags: -XX:InitialHeapSize=536870912 -XX:MaxHeapSize=536870912 -XX:+
 #### （二）并行垃圾回收器整体回收情况:
 - 年轻代垃圾回收31次，平均时间12.3ms
 - 老年代垃圾回收10次，平均时间25ms
-![并行垃圾回收器整体回收情况](../img/2021-11-14-jvm-gc/parallelgcStats.png)
+![并行垃圾回收器整体回收情况](../img/parallelgcStats.png)
 
 #### （三）并行垃圾回收器对象分配和提升情况:
 - 年轻代分配速率为2.58gb/s
 - 老年代晋升速率为579mb/s
 
-![并行垃圾回收器对象分配和提升情况](../img/2021-11-14-jvm-gc/parallelgcObjectStats.png)
+![并行垃圾回收器对象分配和提升情况](../img/parallelgcObjectStats.png)
 
 ### 四、串行垃圾回收器
 ```Shell
@@ -110,11 +110,11 @@ java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xmx512m -Xms512m -XX:+UseSerial
 
 - 年轻代垃圾回收10次，平均时间22ms
 - 老年代垃圾回收12次，平均时间30ms
-![串行垃圾回收器整体回收情况](../img/2021-11-14-jvm-gc/serialgcStats.png)
+![串行垃圾回收器整体回收情况](../img/serialgcStats.png)
 
 - 年轻代分配速率为3.34gb/s
 - 老年代晋升速率为431.87mb/s
-![串行垃圾回收器对象分配和提升情况](../img/2021-11-14-jvm-gc/serialgcObjectStats.png)
+![串行垃圾回收器对象分配和提升情况](../img/serialgcObjectStats.png)
 
 ### 五、CMS垃圾回收器
 ```Shell
@@ -156,7 +156,7 @@ CommandLine flags: -XX:InitialHeapSize=536870912 -XX:MaxHeapSize=536870912 -XX:M
 
 可以发现在并发预清理和最终标记阶段中间发生了年轻代ParNew垃圾回收，一般是一次或多次。通常 CMS 会尝试在年轻代尽可能空的情况下执行 Final Remark 阶段，以免连续触发多次 STW 事件。
 
-![CMS垃圾回收器整体回收情况](../img/2021-11-14-jvm-gc/concMarkSweepGCStats.png)
+![CMS垃圾回收器整体回收情况](../img/concMarkSweepGCStats.png)
 
 ### 六、G1垃圾回收器
 ```Shell
@@ -189,7 +189,7 @@ CommandLine flags: -XX:InitialHeapSize=536870912 -XX:MaxHeapSize=536870912 -XX:+
 2021-11-14T18:14:38.290-0800: 1.088: [GC pause (G1 Humongous Allocation) (young) (initial-mark) 240M->238M(512M), 0.0020116 secs]
 ```
 
-![G1垃圾回收器整体回收情况](../img/2021-11-14-jvm-gc/g1gcStats.png)
+![G1垃圾回收器整体回收情况](../img/g1gcStats.png)
 
 ### 七、总结
 |垃圾回收器|使用场景
