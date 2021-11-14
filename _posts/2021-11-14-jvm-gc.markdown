@@ -1,0 +1,208 @@
+# GC测试对照与总结
+
+### 一、本地虚拟机配置和机器内存
+Java HotSpot(TM) 64-Bit Server VM (25.311-b11) for bsd-amd64 JRE (1.8.0_311-b11), built on Sep 27 2021 13:08:09 by "java_re" with gcc 4.2.1 Compatible Apple LLVM 11.0.0 (clang-1100.0.33.17)
+Memory: 4k page, physical 8388608k(820452k free)
+
+### 二、JVM启动参数介绍
+
+JVM有六类启动参数（细节以后再展开） 
+##### 1. 系统属性参数
+##### 2. 运行模式参数
+##### 3. 堆内存设置参数
+常用的有：
+- -Xmx1g或者-Xmx512m等设置最大堆内存。如果未设置，在本地内存是8G情况下，会默认分配1/4作为进程的最大堆内存。
+- -Xms1g设置最小堆。一般将Xms和Xmx设置一样，防止内存抖动，避免进程启动早期容器full gc。如果不设置，本机也会默认分配一定的堆内存，为134217728byte,随着每次full gc将堆内存上调，最终达到最大堆内存。
+
+##### 4. GC 设置参数
+垃圾回收器，垃圾回收算法的细节以后再展开，如分代设计中的年轻代和老年代垃圾回收器，JDK11起实验的ZGC和JDK12起实验的ShenandoahGC,可参考[盘点Java中的那些常用的Garbage Collector](https://zhuanlan.zhihu.com/p/362758508). 常用的有：
+- -XX:+UseParallelGC,使用并行垃圾回收器，在jdk8中默认的是并行垃圾回收器。年轻代为PSYoungGen。
+- -XX:+UseSerialGC，使用串行垃圾回收器，使用单线程进行垃圾回收。年轻代为defNew。
+- -XX:+UseConcMarkSweepGC,使用CMS垃圾回收器。年轻代为parNew。
+- -XX:+UseG1GC，使用G1垃圾回收器。G1GC属于JDK9到JDK16默认的垃圾回收器。具体可查[JVM - 各版本默认垃圾收集器](https://juejin.cn/post/7001406102621388831).
+- -XX:-UseAdaptiveSizePolicy 此参数是自适应大小策略，在jdk8虚拟机中默认是打开的，必要时可以将之关闭。此参数在CMS中是关闭的。此参数会带来一些影响，如导致年轻代中的对象在未达晋升阈值时，提前晋升至老年代。具体细节可以参考[JVM GC 之「AdaptiveSizePolicy」实战](https://segmentfault.com/a/1190000016427465).
+- -XX:MaxTenuringThreshold=15 显性设置年轻代晋升至老年代，对象复制次数阈值。这个阈值未设置，在JDK8中默认开启AdaptiveSizePolicy的情况下，可能年轻代对象未达到默认的15次交换就晋升到老年代。
+##### 5. 分析诊断参数
+常用的有：
+- -XX:+PrintGCDetails 用于打印GC详情。第一个-XX是格式需要，冒号后边的符号+表示开启，如果关闭的话使用的是减号-，以下同理。
+- -XX:+PrintGC 用于打印GC概要，有时GC日志太繁杂，如G1GC，需要精简信息
+- -XX:+PrintGCDetailsStamps 用于打印日期
+- -Xloggc:<fileName> 用于导出垃圾回收日志
+
+##### 6. JavaAgent参数
+
+下边使用相同参数（只有垃圾回收器不同）启动同个类，对其产生的对象gc情况进行对比
+
+### 三、并行垃圾回收器
+#### （一）gc日志分析
+```Shell
+java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xmx512m -Xms512m -XX:+UseParallelGC -XX:-UseAdaptiveSizePolicy -Xloggc:parallelgc.demo.log com.geek.jvm.GCLogAnalysis
+```
+截取部分gc日志,关闭自适应大小策略
+```text
+CommandLine flags: -XX:InitialHeapSize=536870912 -XX:MaxHeapSize=536870912 -XX:+PrintGC -XX:+PrintGCDateStamps -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:-UseAdaptiveSizePolicy -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:+UseParallelGC 
+2021-11-14T18:35:51.126-0800: 0.274: [GC (Allocation Failure) [PSYoungGen: 131499K->21503K(153088K)] 131499K->37769K(502784K), 0.0138059 secs] [Times: user=0.02 sys=0.03, real=0.01 secs] 
+2021-11-14T18:35:51.164-0800: 0.312: [GC (Allocation Failure) [PSYoungGen: 153087K->21497K(153088K)] 169353K->75447K(502784K), 0.0231498 secs] [Times: user=0.03 sys=0.05, real=0.02 secs] 
+2021-11-14T18:35:51.201-0800: 0.350: [GC (Allocation Failure) [PSYoungGen: 153081K->21493K(153088K)] 207031K->120838K(502784K), 0.0201398 secs] [Times: user=0.02 sys=0.04, real=0.02 secs] 
+2021-11-14T18:35:51.236-0800: 0.385: [GC (Allocation Failure) [PSYoungGen: 153077K->21502K(153088K)] 252422K->165208K(502784K), 0.0188704 secs] [Times: user=0.02 sys=0.03, real=0.02 secs] 
+2021-11-14T18:35:51.270-0800: 0.419: [GC (Allocation Failure) [PSYoungGen: 153086K->21500K(153088K)] 296792K->209652K(502784K), 0.0163969 secs] [Times: user=0.02 sys=0.04, real=0.01 secs] 
+2021-11-14T18:35:51.302-0800: 0.451: [GC (Allocation Failure) [PSYoungGen: 153084K->21485K(153088K)] 341236K->250503K(502784K), 0.0150513 secs] [Times: user=0.02 sys=0.03, real=0.01 secs] 
+2021-11-14T18:35:51.332-0800: 0.480: [GC (Allocation Failure) [PSYoungGen: 153069K->21491K(153088K)] 382087K->296460K(502784K), 0.0176804 secs] [Times: user=0.03 sys=0.03, real=0.02 secs] 
+2021-11-14T18:35:51.363-0800: 0.512: [GC (Allocation Failure) [PSYoungGen: 152865K->21497K(153088K)] 427834K->337865K(502784K), 0.0155465 secs] [Times: user=0.02 sys=0.03, real=0.01 secs] 
+2021-11-14T18:35:51.379-0800: 0.527: [Full GC (Ergonomics) [PSYoungGen: 21497K->0K(153088K)] [ParOldGen: 316368K->246579K(349696K)] 337865K->246579K(502784K), [Metaspace: 2743K->2743K(1056768K)], 0.0213652 secs] [Times: user=0.07 sys=0.01, real=0.03 secs] 
+2021-11-14T18:35:51.413-0800: 0.562: [GC (Allocation Failure) [PSYoungGen: 131393K->21503K(153088K)] 377972K->287040K(502784K), 0.0032933 secs] [Times: user=0.02 sys=0.00, real=0.00 secs] 
+2021-11-14T18:35:51.432-0800: 0.580: [GC (Allocation Failure) [PSYoungGen: 153087K->21502K(153088K)] 418624K->322196K(502784K), 0.0041962 secs] [Times: user=0.02 sys=0.00, real=0.00 secs] 
+2021-11-14T18:35:51.436-0800: 0.585: [Full GC (Ergonomics) [PSYoungGen: 21502K->0K(153088K)] [ParOldGen: 300694K->266586K(349696K)] 322196K->266586K(502784K), [Metaspace: 2743K->2743K(1056768K)], 0.0186228 secs] [Times: user=0.06 sys=0.00, real=0.02 secs] 
+```
+
+日志分为左右两半，左边是堆的内存变化情况，右边是CPU的活动情况。
+
+第1行日志，打印了一些命令参数，可以看出堆的初始值就是536870912K,也即512m.
+可是从下面的日志中显示的堆的总大小是502784K,小于512m,实际上因为年轻代中S0和S1总有一个存储对象为0，S0或S1大小为21504K.502784K加上一个S区，刚好为512m.
+
+第2行日志可以看出年轻代在做垃圾回收，年轻代在并行垃圾回收器中叫PSYoungGen,其年轻代大小为153088K,使用131499K,回收后仍被占用21503K.堆总大小502784K,使用131499K,与年轻代内存被使用大小一致，因为此时还没有对象到老年代。但是初次年轻代回收后，堆总大小仍被占用37769K，大于年轻代被占用的21503K,这是因为初次年轻代回收后，有些对象晋升至老年代。
+
+第10行显示了第一次老年代GC，老年代叫ParOldGen。需要注意的是会触发清空年轻代。
+
+第2行与第3行，代表了第一次和第二次年轻代GC,间隔0.042s。两次GC之间，年轻代内存增长了153087K-21503K，增长128.5Mb,对象分配速率为128.5Mb/0.042s=3060Mb/s。对象平均分配速率为每次对象分配总和/所有年轻代每相邻两次GC间隔时间总和。
+同理，第10行和13行两次fullGC之间，可以计算出老年代晋升速率为(300694K-246579K)/1024/(0.057s)=927Mb/s对象平均分配速率为分配总对象大小/所有年轻代GC总时间。对象平均老年代提升速率为每次对象分配总和/所有年轻代每相邻两次GC间隔时间总和。
+
+
+
+截取部分gc日志,没有关闭自适应大小策略
+```Shell
+java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xmx512m -Xms512m -XX:+UseParallelGC -Xloggc:parallelgc.demo.log com.geek.jvm.GCLogAnalysis
+```
+```text
+CommandLine flags: -XX:InitialHeapSize=536870912 -XX:MaxHeapSize=536870912 -XX:+PrintGC -XX:+PrintGCDateStamps -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:+UseParallelGC 
+2021-11-14T18:08:33.742-0800: 0.193: [GC (Allocation Failure) [PSYoungGen: 131584K->21497K(153088K)] 131584K->41346K(502784K), 0.0134098 secs] [Times: user=0.02 sys=0.03, real=0.01 secs] 
+2021-11-14T18:08:33.774-0800: 0.224: [GC (Allocation Failure) [PSYoungGen: 152742K->21498K(153088K)] 172592K->77567K(502784K), 0.0185187 secs] [Times: user=0.03 sys=0.05, real=0.02 secs] 
+2021-11-14T18:08:33.807-0800: 0.257: [GC (Allocation Failure) [PSYoungGen: 152467K->21489K(153088K)] 208535K->112782K(502784K), 0.0129368 secs] [Times: user=0.02 sys=0.02, real=0.02 secs] 
+2021-11-14T18:08:33.835-0800: 0.285: [GC (Allocation Failure) [PSYoungGen: 153073K->21503K(153088K)] 244366K->154880K(502784K), 0.0154221 secs] [Times: user=0.02 sys=0.04, real=0.02 secs] 
+2021-11-14T18:08:33.865-0800: 0.315: [GC (Allocation Failure) [PSYoungGen: 152545K->21478K(153088K)] 285922K->191917K(502784K), 0.0141095 secs] [Times: user=0.02 sys=0.03, real=0.01 secs] 
+2021-11-14T18:08:33.892-0800: 0.342: [GC (Allocation Failure) [PSYoungGen: 153062K->21500K(80384K)] 323501K->235427K(430080K), 0.0156807 secs] [Times: user=0.02 sys=0.03, real=0.01 secs] 
+2021-11-14T18:08:33.913-0800: 0.364: [GC (Allocation Failure) [PSYoungGen: 80380K->35208K(116736K)] 294307K->255229K(466432K), 0.0043739 secs] [Times: user=0.01 sys=0.01, real=0.00 secs] 
+2021-11-14T18:08:33.924-0800: 0.375: [GC (Allocation Failure) [PSYoungGen: 94088K->50329K(116736K)] 314109K->275564K(466432K), 0.0050100 secs] [Times: user=0.01 sys=0.00, real=0.01 secs] 
+2021-11-14T18:08:33.936-0800: 0.386: [GC (Allocation Failure) [PSYoungGen: 109209K->57792K(116736K)] 334444K->292183K(466432K), 0.0064938 secs] [Times: user=0.02 sys=0.01, real=0.01 secs] 
+2021-11-14T18:08:33.949-0800: 0.400: [GC (Allocation Failure) [PSYoungGen: 116672K->37625K(116736K)] 351063K->306723K(466432K), 0.0126619 secs] [Times: user=0.02 sys=0.03, real=0.02 secs] 
+2021-11-14T18:08:33.969-0800: 0.419: [GC (Allocation Failure) [PSYoungGen: 96385K->16919K(116736K)] 365483K->320776K(466432K), 0.0134791 secs] [Times: user=0.02 sys=0.02, real=0.02 secs] 
+2021-11-14T18:08:33.983-0800: 0.433: [Full GC (Ergonomics) [PSYoungGen: 16919K->0K(116736K)] [ParOldGen: 303856K->227699K(349696K)] 320776K->227699K(466432K), [Metaspace: 2743K->2743K(1056768K)], 0.0210457 secs] [Times: user=0.06 sys=0.01, real=0.02 secs] 
+```
+可以看出其堆大小一直在变化。堆越大，垃圾回收时间越长，这个在堆内存大的场景下更为明显。
+
+使用在线分析工具[gceasy](https://gceasy.io/) 进行分析可得到数据如下
+
+#### （二）并行垃圾回收器整体回收情况:
+- 年轻代垃圾回收31次，平均时间12.3ms
+- 老年代垃圾回收10次，平均时间25ms
+![并行垃圾回收器整体回收情况](../img/2021-11-14-jvm-gc/parallelgcStats.png)
+
+#### （三）并行垃圾回收器对象分配和提升情况:
+- 年轻代分配速率为2.58gb/s
+- 老年代晋升速率为579mb/s
+
+![并行垃圾回收器对象分配和提升情况](../img/2021-11-14-jvm-gc/parallelgcObjectStats.png)
+
+### 四、串行垃圾回收器
+```Shell
+java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xmx512m -Xms512m -XX:+UseSerialGC -Xloggc:serialgc.demo.log com.geek.jvm.GCLogAnalysis
+```
+
+- 年轻代垃圾回收10次，平均时间22ms
+- 老年代垃圾回收12次，平均时间30ms
+![串行垃圾回收器整体回收情况](../img/2021-11-14-jvm-gc/serialgcStats.png)
+
+- 年轻代分配速率为3.34gb/s
+- 老年代晋升速率为431.87mb/s
+![串行垃圾回收器对象分配和提升情况](../img/2021-11-14-jvm-gc/serialgcObjectStats.png)
+
+### 五、CMS垃圾回收器
+```Shell
+java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xmx512m -Xms512m -XX:+UseConcMarkSweepGC -Xloggc:concmsgc.demo.log com.geek.jvm.GCLogAnalysis
+```
+
+```texg
+CommandLine flags: -XX:InitialHeapSize=536870912 -XX:MaxHeapSize=536870912 -XX:MaxNewSize=178958336 -XX:MaxTenuringThreshold=6 -XX:NewSize=178958336 -XX:OldPLABSize=16 -XX:OldSize=357912576 -XX:+PrintGC -XX:+PrintGCDateStamps -XX:+PrintGCDetails -XX:+PrintGCTimeStamps -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:+UseConcMarkSweepGC -XX:+UseParNewGC 
+2021-11-14T18:12:13.488-0800: 0.201: [GC (Allocation Failure) 2021-11-14T18:12:13.488-0800: 0.201: [ParNew: 139776K->17471K(157248K), 0.0182601 secs] 139776K->50405K(506816K), 0.0184388 secs] [Times: user=0.02 sys=0.04, real=0.02 secs] 
+2021-11-14T18:12:13.523-0800: 0.237: [GC (Allocation Failure) 2021-11-14T18:12:13.524-0800: 0.237: [ParNew: 157247K->17472K(157248K), 0.0239369 secs] 190181K->95116K(506816K), 0.0240496 secs] [Times: user=0.03 sys=0.03, real=0.02 secs] 
+2021-11-14T18:12:13.566-0800: 0.279: [GC (Allocation Failure) 2021-11-14T18:12:13.566-0800: 0.279: [ParNew: 157248K->17472K(157248K), 0.0732935 secs] 234892K->140984K(506816K), 0.0733956 secs] [Times: user=0.17 sys=0.02, real=0.07 secs] 
+2021-11-14T18:12:13.656-0800: 0.370: [GC (Allocation Failure) 2021-11-14T18:12:13.656-0800: 0.370: [ParNew: 157248K->17471K(157248K), 0.0314827 secs] 280760K->187566K(506816K), 0.0315791 secs] [Times: user=0.07 sys=0.02, real=0.03 secs] 
+2021-11-14T18:12:13.703-0800: 0.416: [GC (Allocation Failure) 2021-11-14T18:12:13.703-0800: 0.416: [ParNew: 157237K->17471K(157248K), 0.0655045 secs] 327332K->235098K(506816K), 0.0655948 secs] [Times: user=0.13 sys=0.01, real=0.06 secs] 
+2021-11-14T18:12:13.769-0800: 0.483: [GC (CMS Initial Mark) [1 CMS-initial-mark: 217626K(349568K)] 245159K(506816K), 0.0015783 secs] [Times: user=0.00 sys=0.00, real=0.01 secs] 
+2021-11-14T18:12:13.771-0800: 0.485: [CMS-concurrent-mark-start]
+2021-11-14T18:12:13.782-0800: 0.496: [CMS-concurrent-mark: 0.011/0.011 secs] [Times: user=0.02 sys=0.01, real=0.01 secs] 
+2021-11-14T18:12:13.783-0800: 0.496: [CMS-concurrent-preclean-start]
+2021-11-14T18:12:13.783-0800: 0.497: [CMS-concurrent-preclean: 0.001/0.001 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+2021-11-14T18:12:13.783-0800: 0.497: [CMS-concurrent-abortable-preclean-start]
+2021-11-14T18:12:13.785-0800: 0.499: [GC (Allocation Failure) 2021-11-14T18:12:13.785-0800: 0.499: [ParNew: 157247K->17468K(157248K), 0.0942884 secs] 374874K->282264K(506816K), 0.0943884 secs] [Times: user=0.20 sys=0.01, real=0.10 secs] 
+2021-11-14T18:12:13.895-0800: 0.609: [GC (Allocation Failure) 2021-11-14T18:12:13.895-0800: 0.609: [ParNew2021-11-14T18:12:13.982-0800: 0.696: [CMS-concurrent-abortable-preclean: 0.002/0.199 secs] [Times: user=0.40 sys=0.03, real=0.20 secs] 
+: 157244K->17470K(157248K), 0.1031045 secs] 422040K->328601K(506816K), 0.1032268 secs] [Times: user=0.22 sys=0.02, real=0.10 secs] 
+2021-11-14T18:12:13.999-0800: 0.712: [GC (CMS Final Remark) [YG occupancy: 17614 K (157248 K)]2021-11-14T18:12:13.999-0800: 0.712: [Rescan (parallel) , 0.0010500 secs]2021-11-14T18:12:14.000-0800: 0.713: [weak refs processing, 0.0000148 secs]2021-11-14T18:12:14.000-0800: 0.713: [class unloading, 0.0003293 secs]2021-11-14T18:12:14.000-0800: 0.714: [scrub symbol table, 0.0003584 secs]2021-11-14T18:12:14.001-0800: 0.714: [scrub string table, 0.0000830 secs][1 CMS-remark: 311130K(349568K)] 328745K(506816K), 0.0019448 secs] [Times: user=0.01 sys=0.00, real=0.01 secs] 
+2021-11-14T18:12:14.001-0800: 0.714: [CMS-concurrent-sweep-start]
+2021-11-14T18:12:14.001-0800: 0.715: [CMS-concurrent-sweep: 0.001/0.001 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+2021-11-14T18:12:14.001-0800: 0.715: [CMS-concurrent-reset-start]
+2021-11-14T18:12:14.002-0800: 0.715: [CMS-concurrent-reset: 0.000/0.000 secs] [Times: user=0.00 sys=0.00, real=0.00 secs] 
+```
+
+第7行至第20行对应一次CMS GC的六个阶段，分别为
+1. 阶段 1: Initial Mark(初始标记)
+2. 阶段 2: Concurrent Mark(并发标记)
+3. 阶段 3: Concurrent Preclean(并发预清理)
+4. 阶段 4: Final Remark(最终标记)
+5. 阶段 5: Concurrent Sweep(并发清除)
+6. 阶段 6: Concurrent Reset(并发重置)
+
+其中CMS-concurrent-abortable-preclean-start是并发预清理中的一个可取消的子阶段。
+
+可以发现在并发预清理和最终标记阶段中间发生了年轻代ParNew垃圾回收，一般是一次或多次。通常 CMS 会尝试在年轻代尽可能空的情况下执行 Final Remark 阶段，以免连续触发多次 STW 事件。
+
+![CMS垃圾回收器整体回收情况](../img/2021-11-14-jvm-gc/concMarkSweepGCStats.png)
+
+### 六、G1垃圾回收器
+```Shell
+java -XX:+PrintGC -XX:+PrintGCDateStamps -Xmx512m -Xms512m -XX:+G1GC -Xloggc:g1gc.demo.log com.geek.jvm.GCLogAnalysis
+```
+
+```text
+CommandLine flags: -XX:InitialHeapSize=536870912 -XX:MaxHeapSize=536870912 -XX:+PrintGC -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+UseCompressedClassPointers -XX:+UseCompressedOops -XX:+UseG1GC 
+2021-11-14T18:14:37.369-0800: 0.167: [GC pause (G1 Evacuation Pause) (young) 29M->9679K(512M), 0.0042344 secs]
+2021-11-14T18:14:37.380-0800: 0.178: [GC pause (G1 Evacuation Pause) (young) 34M->16M(512M), 0.0038702 secs]
+2021-11-14T18:14:37.397-0800: 0.195: [GC pause (G1 Evacuation Pause) (young) 50M->28M(512M), 0.0051059 secs]
+2021-11-14T18:14:37.474-0800: 0.272: [GC pause (G1 Evacuation Pause) (young) 88M->51M(512M), 0.0422287 secs]
+2021-11-14T18:14:37.565-0800: 0.363: [GC pause (G1 Evacuation Pause) (young) 125M->70M(512M), 0.0504293 secs]
+2021-11-14T18:14:37.623-0800: 0.421: [GC pause (G1 Evacuation Pause) (young) 127M->91M(512M), 0.0298701 secs]
+2021-11-14T18:14:37.672-0800: 0.470: [GC pause (G1 Evacuation Pause) (young) 158M->109M(512M), 0.0354074 secs]
+2021-11-14T18:14:37.724-0800: 0.522: [GC pause (G1 Evacuation Pause) (young) 185M->129M(512M), 0.0736587 secs]
+2021-11-14T18:14:37.866-0800: 0.664: [GC pause (G1 Evacuation Pause) (young) 229M->159M(512M), 0.0779677 secs]
+2021-11-14T18:14:37.984-0800: 0.782: [GC pause (G1 Evacuation Pause) (young) 260M->190M(512M), 0.0614422 secs]
+2021-11-14T18:14:38.055-0800: 0.853: [GC pause (G1 Humongous Allocation) (young) (initial-mark) 257M->207M(512M), 0.0124920 secs]
+2021-11-14T18:14:38.068-0800: 0.866: [GC concurrent-root-region-scan-start]
+2021-11-14T18:14:38.068-0800: 0.866: [GC concurrent-root-region-scan-end, 0.0001352 secs]
+2021-11-14T18:14:38.068-0800: 0.866: [GC concurrent-mark-start]
+2021-11-14T18:14:38.077-0800: 0.875: [GC concurrent-mark-end, 0.0089023 secs]
+2021-11-14T18:14:38.078-0800: 0.876: [GC remark, 0.0019615 secs]
+2021-11-14T18:14:38.081-0800: 0.879: [GC cleanup 249M->248M(512M), 0.0004306 secs]
+2021-11-14T18:14:38.081-0800: 0.879: [GC concurrent-cleanup-start]
+2021-11-14T18:14:38.081-0800: 0.879: [GC concurrent-cleanup-end, 0.0000110 secs]
+2021-11-14T18:14:38.191-0800: 0.989: [GC pause (G1 Evacuation Pause) (young) 331M->242M(512M), 0.0870366 secs]
+2021-11-14T18:14:38.280-0800: 1.078: [GC pause (G1 Evacuation Pause) (mixed) 262M->239M(512M), 0.0097249 secs]
+2021-11-14T18:14:38.290-0800: 1.088: [GC pause (G1 Humongous Allocation) (young) (initial-mark) 240M->238M(512M), 0.0020116 secs]
+```
+
+![G1垃圾回收器整体回收情况](../img/2021-11-14-jvm-gc/g1gcStats.png)
+
+### 七、总结
+|垃圾回收器|使用场景
+|---|---|
+|串行垃圾回收器|单线程的低延迟垃圾回收|
+|并行垃圾回收器|多线程的低延迟垃圾回收|
+|CMS垃圾回收器|多线程的高吞吐量垃圾回收|
+|G1垃圾回收器|整体平均GC时间可控，适用于系统内存堆较大|
+
+### 八、jvm性能调优
+1. 降低年轻代对象过早提升到老年代
+- 在年轻代老年代内存大小比值不变情况下，整体提高堆内存配置（并行gc算法中，会导致单次垃圾回收时间过长）
+- 在堆总内存大小不变情况下，调大年轻代占比。
+- 提高年轻代MaxTenuringThreshold值
+2. 降低高分配速率
+- 优化业务代码，降低对象创建频率和对象大小
