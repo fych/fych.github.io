@@ -1,0 +1,37 @@
+1. jvm类的加载786原则
+
+类的生命周期7
+
+类的加载时机8=4个显示，4个隐式
+
+不会初始化（可能会加载）6
+
+
+---
+打印gc日志
+java -XX:+PrintGCDetails -XX:+PrintGCDateStamps -Xloggc:gc.demo.log -Xmx1g -Xms1g com.geek.week1jvm.GCLogAnalysis 
+
+- PrintGCDetails打印详情
+- PrintGC打印概要
+- PrintGCDetailsStamps打印日期
+- Xloggc导出垃圾回收日志
+- Xmx设置最大堆
+- Xms设置最小堆（一般将Xms和Xmx设置一样，防止内存抖动或早期进程full gc。如果不设置，堆大小会慢慢涨）
+- MaxTenuringThreshold年轻代复制次数阈值
+
+java -XX:+PrintGCDetails -XX:+PrintGCDateStamps com.geek.week1jvm.GCLogAnalysis 
+
+- java8默认UseParallelGC(PSYoungGen)
+- UseSerialGC(defNew)
+- UseConcMarkSweepGC(parNew)
+- UseG1GC
+
+
+---
+jvm性能调优 
+1. 降低过早提升
+- 在年轻代老年代内存大小比值不变情况下，整体提高堆内存配置（并行gc算法中，会导致单次垃圾回收时间过长）
+- 在堆总内存大小不变情况下，调大年轻代占比。
+- 提高年轻代MaxTenuringThreshold值
+2. 降低高分配速率
+- 优化业务代码，降低对象创建频率和对象大小
